@@ -10,9 +10,9 @@ import subprocess
 from datetime import datetime, timedelta
 
 import boto3
+import docker
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
 
 
 def generer_trajets():
@@ -24,6 +24,28 @@ def generer_trajets():
     print(result.stdout)
     if result.stderr:
         print("STDERR:", result.stderr)
+
+
+def analyser_heures_pointe():
+    """
+    Tâche 2 : soumet le job Spark au cluster.
+    On exécute spark-submit DANS le conteneur Spark Master (qui a Java + Spark),
+    via le SDK Docker (socket monté dans Airflow). Plus simple qu'un JDK dans Airflow.
+    """
+    client = docker.from_env()
+    master = client.containers.get("anfa-spark-master")
+    cmd = (
+        "/opt/spark/bin/spark-submit "
+        "--master spark://spark-master:7077 "
+        "--conf spark.jars.ivy=/tmp/.ivy2 "          # HOME=/nonexistent dans l'image Spark
+        "--packages org.apache.hadoop:hadoop-aws:3.3.4,"
+        "com.amazonaws:aws-java-sdk-bundle:1.12.262 "
+        "/opt/scripts/heures_de_pointe.py"
+    )
+    code, output = master.exec_run(cmd, stream=False, demux=False)
+    print(output.decode("utf-8", errors="replace"))
+    if code != 0:
+        raise RuntimeError(f"[ERREUR] spark-submit a échoué (exit {code})")
 
 
 def verifier_resultats():
@@ -81,16 +103,9 @@ with DAG(
         python_callable=generer_trajets,
     )
 
-    # spark-submit fourni par PySpark (installé dans Airflow), pointe sur le master.
-    t_analyser = BashOperator(
+    t_analyser = PythonOperator(
         task_id="analyser_heures_pointe",
-        bash_command=(
-            "spark-submit "
-            "--master spark://spark-master:7077 "
-            "--packages org.apache.hadoop:hadoop-aws:3.3.4,"
-            "com.amazonaws:aws-java-sdk-bundle:1.12.262 "
-            "/opt/airflow/scripts/heures_de_pointe.py"
-        ),
+        python_callable=analyser_heures_pointe,
     )
 
     t_verifier = PythonOperator(
