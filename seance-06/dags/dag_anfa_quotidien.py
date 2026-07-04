@@ -49,6 +49,7 @@ def analyser_heures_pointe():
 
 
 def verifier_resultats():
+    raise ValueError("Erreur volontaire pour démontrer le retry d'Airflow")
     """Tâche 3 : vérifie que les Parquet sont bien dans MinIO. Échoue si vide."""
     s3 = boto3.client(
         "s3",
