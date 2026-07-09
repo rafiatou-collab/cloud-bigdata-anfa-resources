@@ -1,40 +1,38 @@
-# Rendu — Séance 9
+﻿# Rendu Séance 9
 
-**Nom et prénom :** <Votre nom complet>
-**Identifiant GitHub :** <votre-username>
-**Date de soumission :** <JJ/MM/AAAA>
+**Nom et prénom :** KAMBIA Rafiatou
+**Identifiant GitHub :** rafiatou-collab
 
 ## Résumé de la séance
 
-<2-4 lignes : stack Prometheus/Grafana déployée, exportateur de fraîcheur Anfa
-instrumenté, dashboard construit, alerte configurée et déclenchée sur panne simulée.>
+J'ai déployé une stack de monitoring complète (Prometheus + Grafana + Node Exporter + cAdvisor + exportateur de fraîcheur Anfa), exploré les cibles scrapées par Prometheus, exécuté des requêtes PromQL, importé un dashboard Node Exporter Full dans Grafana, construit un panneau de fraîcheur métier avec jauge et seuils, configuré une règle d'alerte, et simulé une panne pour observer l'alerte passer de Normal à Firing puis revenir à Normal.
 
 ## Étapes principales
 
-1. Déploiement de Prometheus, Node Exporter, cAdvisor, Grafana et d'un exportateur
-   métier custom (fraîcheur des données Anfa).
-2. Exploration des cibles Prometheus et premières requêtes PromQL.
-3. Import du dashboard "Node Exporter Full" et construction d'un panneau custom.
-4. Configuration d'une alerte Grafana sur la fraîcheur des données.
-5. Simulation d'une panne silencieuse et observation du déclenchement de l'alerte.
+1. Déploiement de la stack monitoring via Docker Compose (5 services).
+2. Vérification des 4 cibles Prometheus toutes UP (prometheus, node-exporter, cadvisor, anfa-freshness).
+3. Requête PromQL time() - anfa_dernier_traitement_timestamp : graphique en dents de scie.
+4. Import du dashboard Node Exporter Full (ID 1860) dans Grafana.
+5. Création du panneau Fraîcheur des données Anfa avec jauge et seuils (vert/orange/rouge).
+6. Configuration d'une règle d'alerte (seuil 90s, evaluation 10s, for 30s).
+7. Simulation de panne via docker exec touch /tmp/anfa_en_panne : alerte Firing observée.
+8. Réparation via docker exec rm /tmp/anfa_en_panne : alerte revenue à Normal.
 
 ## Captures d'écran
 
-### Les 4 cibles Prometheus à l'état UP
-![Targets](captures/prometheus-targets.png)
+### Prometheus - 4 cibles UP
+![Prometheus Targets](captures/prometheus-targets.png)
 
-### Dashboard "Node Exporter Full" importé
-![Node Exporter Dashboard](captures/grafana-node-exporter.png)
+### Grafana - Dashboard Node Exporter Full
+![Grafana Node Exporter](captures/grafana-node-exporter.png)
 
-### Alerte à l'état Firing après panne simulée
-![Alerte Firing](captures/grafana-alerte-firing.png)
+### Grafana - Alerte en état Firing
+![Grafana Alerte Firing](captures/grafana-alerte-firing.png)
 
-## Réflexion personnelle
+## Réflexion
 
-<3-5 lignes : en quoi cette séance répond-elle directement à la situation-problème
-d'Awa dans le CM ? Qu'est-ce que la métrique de fraîcheur vous a permis de voir que
-les autres métriques (CPU, RAM, statut des conteneurs) ne montraient pas ?>
+Cette séance illustre parfaitement la limite du monitoring purement infrastructurel : tous les conteneurs peuvent être "Up" et tous les pods "Running" pendant qu'un pipeline cesse silencieusement de produire des résultats frais. La métrique de fraîcheur time() - anfa_dernier_traitement_timestamp est une métrique métier - elle mesure non pas si le système tourne, mais s'il produit ce qu'on attend de lui. C'est exactement la situation d'Awa dans le CM : sans cette métrique, la panne aurait pu passer inaperçue pendant des heures. Prometheus et Grafana permettent de passer d'un monitoring "le serveur tourne" à un monitoring "le pipeline produit des données fraîches", ce qui est la vraie question en production.
 
 ## Difficultés rencontrées
 
-<Aucune | Décrivez brièvement.>
+La source de données Prometheus n'apparaissait pas dans la liste lors de l'import du dashboard 1860. Résolution : ajout manuel de la source via Connections -> Data sources -> Add data source avec l'URL http://prometheus:9090.
