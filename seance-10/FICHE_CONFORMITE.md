@@ -1,27 +1,22 @@
-# Fiche de conformité — Application mobile passagers Anfa
+﻿# Fiche de conformité — Application mobile Anfa
 
-> Gabarit fourni. Complétez chaque section **en 2-4 lignes**, en vous appuyant sur le CM.
-> Il n'y a pas de "bonne réponse" unique sur certains points — l'important est le raisonnement.
+## Finalité du traitement
+Les données collectées (position GPS, historique de paiements, numéro de téléphone) sont traitées dans le but de proposer aux passagers le trajet de bus le plus proche et de gérer leur abonnement mobile money. La finalité est déterminée, explicite et légitime.
 
-## 1. Finalité du traitement
-<Pourquoi collecte-t-on ces données ? À quel usage précis, et à aucun autre ?>
+## Sensibilité des données
+Les données de localisation GPS sont des données personnelles sensibles car elles permettent de reconstituer les déplacements quotidiens d'une personne. L'historique de paiements et le numéro de téléphone sont également des données personnelles à protéger. Leur combinaison crée un profil détaillé du passager.
 
-## 2. Données collectées et leur sensibilité
-<Lister les 3 données du scénario. Laquelle est la plus sensible et pourquoi ?>
+## Base légale (loi togolaise)
+Au Togo, la loi n°2019-014 relative à la protection des données à caractère personnel encadre ce type de traitement. La base légale retenue est le consentement explicite de l'utilisateur lors de l'inscription à l'application, conformément à l'article 5 de cette loi.
 
-## 3. Base légale applicable
-<Quel texte togolais s'applique à quelle donnée ? (Loi 2019-014 ? Loi 2017-007/2023-012 ?
-Les deux peuvent s'appliquer à une même donnée — expliquez pourquoi.)>
+## Durée de conservation
+Les données de position GPS sont conservées 30 jours. L'historique de paiements est conservé 5 ans (obligation comptable). Le numéro de téléphone est conservé pendant toute la durée de l'abonnement actif puis supprimé dans les 30 jours suivant la résiliation.
 
-## 4. Durée de conservation
-<Combien de temps ces données devraient-elles être gardées ? Justifiez en lien
-avec le principe de "minimisation" vu en CM.>
+## Souveraineté des données
+Les données des passagers togolais doivent être hébergées sur le territoire togolais ou dans un pays offrant un niveau de protection équivalent. L'utilisation de MinIO déployé localement répond à cette exigence de souveraineté numérique.
 
-## 5. Hébergement et souveraineté
-<Où ces données doivent-elles être hébergées pour rester conformes à la loi
-togolaise ? Quel est le risque si on héberge chez un cloud américain ? (Patriot Act)>
+## Droits des personnes
+Les passagers disposent des droits suivants : droit d'accès, de rectification, d'effacement, de portabilité et d'opposition. Un formulaire de contact doit être disponible dans l'application pour exercer ces droits. Anfa doit répondre dans un délai maximum de 30 jours.
 
-## 6. Droit des personnes concernées
-<Un passager doit-il pouvoir demander la suppression de ses données ? Le système
-technique actuel d'Anfa (tel que vous l'avez construit depuis la séance 1) le
-permettrait-il facilement ? Pourquoi ?>
+## Risques identifiés et mesures
+Risque principal : fuite des données de localisation permettant de reconstituer les habitudes de déplacement. Mesures : chiffrement des données en transit (HTTPS) et au repos, accès restreint aux données par rôle, journalisation des accès, et audit de sécurité annuel.
